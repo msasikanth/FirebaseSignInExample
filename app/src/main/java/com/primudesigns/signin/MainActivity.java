@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -50,6 +52,13 @@ public class MainActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
 
         ActivityMainBinding mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        Toolbar toolbar = mainBinding.toolbar;
+        setSupportActionBar(toolbar);
+
+        if (getSupportActionBar() != null) {
+            ActionBar actionBar = getSupportActionBar();
+            actionBar.setTitle(null);
+        }
 
         // Views
         mButton = mainBinding.sbSignIn;
