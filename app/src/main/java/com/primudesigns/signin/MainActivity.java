@@ -138,8 +138,12 @@ public class MainActivity extends AppCompatActivity implements
 
         switch (item.getItemId()) {
             case R.id.sign_out:
-                mAction.signedOut();
-                mAuth.signOut();
+                if (mAuth.getCurrentUser() != null) {
+                    mAction.signedOut();
+                    mAuth.signOut();
+                } else {
+                    Toast.makeText(this, "You are already signed out", Toast.LENGTH_SHORT).show();
+                }
                 break;
         }
 

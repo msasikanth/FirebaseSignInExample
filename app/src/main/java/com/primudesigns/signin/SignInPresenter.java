@@ -10,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -23,7 +24,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 
-public class SignInPresenter implements SignInContract.UserAction {
+class SignInPresenter implements SignInContract.UserAction {
 
     @NonNull
     private final SignInContract.View mSignInView;
@@ -35,7 +36,7 @@ public class SignInPresenter implements SignInContract.UserAction {
 
     private static final String TAG = "SignInActivity";
 
-    public SignInPresenter(@NonNull SignInContract.View signInView, @NonNull Activity activity, @NonNull FirebaseAuth auth) {
+    SignInPresenter(@NonNull SignInContract.View signInView, @NonNull Activity activity, @NonNull FirebaseAuth auth) {
         mSignInView = signInView;
         mActivity = activity;
         mAuth = auth;
@@ -58,6 +59,8 @@ public class SignInPresenter implements SignInContract.UserAction {
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
+                            mProgress.setVisibility(View.GONE);
+                            signedOut();
                             Toast.makeText(mActivity, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         } else {
@@ -96,6 +99,7 @@ public class SignInPresenter implements SignInContract.UserAction {
 
             Glide.with(mActivity)
                     .load(mAuth.getCurrentUser().getPhotoUrl())
+                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                     .into(profileImage);
 
             profileName.setText(mAuth.getCurrentUser().getDisplayName());
