@@ -4,37 +4,30 @@ import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.view.View;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 
 class SignInPresenter implements SignInContract.UserAction {
 
+    private static final String TAG = "SignInActivity";
     @NonNull
     private final SignInContract.View mSignInView;
     @NonNull
     private final FirebaseAuth mAuth;
-
     @NonNull
     private final Activity mActivity;
-
-    private static final String TAG = "SignInActivity";
 
     SignInPresenter(@NonNull SignInContract.View signInView, @NonNull Activity activity, @NonNull FirebaseAuth auth) {
         mSignInView = signInView;
@@ -49,7 +42,7 @@ class SignInPresenter implements SignInContract.UserAction {
     }
 
     @Override
-    public void firebaseAuthWithGoogle(GoogleSignInAccount account, final ProgressBar mProgress, final CircleImageView profileImage, final TextView profileName, final TextView profileEmail) {
+    public void firebaseAuthWithGoogle(GoogleSignInAccount account) {
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(mActivity, new OnCompleteListener<AuthResult>() {
@@ -58,14 +51,13 @@ class SignInPresenter implements SignInContract.UserAction {
                         // If sign in fails, display a message to the user. If sign in succeeds
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
+                        mSignInView.hideProgress();
                         if (!task.isSuccessful()) {
-                            mProgress.setVisibility(View.GONE);
                             signedOut();
                             Toast.makeText(mActivity, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         } else {
-                            mProgress.setVisibility(View.GONE);
-                            loadProfile(profileImage, profileName, profileEmail);
+                            loadProfile();
                             Log.d(TAG, "Sign In Successful");
                         }
                     }
@@ -93,17 +85,26 @@ class SignInPresenter implements SignInContract.UserAction {
     }
 
     @Override
-    public void loadProfile(CircleImageView profileImage, TextView profileName, TextView profileEmail) {
+    public void loadProfile() {
 
         if (mAuth.getCurrentUser() != null) {
 
-            Glide.with(mActivity)
-                    .load(mAuth.getCurrentUser().getPhotoUrl())
-                    .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                    .into(profileImage);
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            mSignInView.loadProfile(currentUser.getPhotoUrl(), currentUser.getDisplayName(), currentUser.getEmail());
 
-            profileName.setText(mAuth.getCurrentUser().getDisplayName());
-            profileEmail.setText(mAuth.getCurrentUser().getEmail());
+        }
+    }
+
+    @Override
+    public void resultBack(int requestCode, Intent data) {
+        if (requestCode == MainActivity.RC_SIGN_IN) {
+
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+
+            if (result.isSuccess()) {
+                GoogleSignInAccount account = result.getSignInAccount();
+                firebaseAuthWithGoogle(account);
+            }
 
         }
     }

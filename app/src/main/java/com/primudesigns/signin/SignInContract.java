@@ -1,14 +1,12 @@
 package com.primudesigns.signin;
 
-import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.content.Intent;
+import android.net.Uri;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.api.GoogleApiClient;
 
-import de.hdodenhof.circleimageview.CircleImageView;
-
-public class SignInContract {
+class SignInContract {
 
     interface View {
 
@@ -20,19 +18,27 @@ public class SignInContract {
 
         void hideProfile();
 
+        void showProgress();
+
+        void hideProgress();
+
+        void loadProfile(Uri imageURL, String profileName, String profileEmail);
+
     }
 
     interface UserAction {
 
         void signInIntent(GoogleApiClient googleApiClient);
 
-        void firebaseAuthWithGoogle(GoogleSignInAccount account, ProgressBar mProgress, CircleImageView profileImage, TextView profileName, TextView profileEmail);
+        void firebaseAuthWithGoogle(GoogleSignInAccount account);
 
         void signedIn();
 
         void signedOut();
 
-        void loadProfile(CircleImageView profileImage, TextView profileName, TextView profileEmail);
+        void loadProfile();
+
+        void resultBack(int requestCode, Intent data);
 
     }
 
